@@ -15,7 +15,7 @@ class ProductViewModel(private val repository: ProductRepository) : ViewModel() 
             try {
                 products = repository.getProductsFromApi()
             } catch (e: Exception) {
-                // Manejo de error básico
+
             }
         }
     }
