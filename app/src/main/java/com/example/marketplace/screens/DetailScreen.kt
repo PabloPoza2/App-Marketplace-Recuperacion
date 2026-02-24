@@ -36,7 +36,7 @@ fun DetailScreen(product: Product, onBack: () -> Unit, onAddToFavorites: () -> U
             }, modifier = Modifier.weight(1f).padding(4.dp)) {
                 Text("Añadir a Favoritos")
             }
-            Button(onClick = { /* */ }, modifier = Modifier.weight(1f).padding(4.dp)) {
+            Button(onClick = { /**/ }, modifier = Modifier.weight(1f).padding(4.dp)) {
                 Text("Añadir a Cesta")
             }
         }
