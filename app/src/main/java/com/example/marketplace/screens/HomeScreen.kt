@@ -1,50 +1,60 @@
 package com.example.marketplace.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding // IMPORTANTE
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp // IMPORTANTE
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import com.example.marketplace.Product
 import com.example.marketplace.ProductViewModel
 
 @Composable
-fun HomeScreen(viewModel: ProductViewModel, onNavigateToProfile: () -> Unit, navController: androidx.navigation.NavController) {
-    // Carga los datos de la API al iniciar
-    LaunchedEffect(Unit) {
-        viewModel.fetchProducts()
-    }
+fun HomeScreen(
+    viewModel: ProductViewModel,
+    navController: NavHostController,
+    onNavigateToProfile: () -> Unit,
+    onProductClick: (Product) -> Unit
+) {
+    LaunchedEffect(Unit) { viewModel.fetchProducts() }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // --- FILA DE BOTONES PARA LA DEFENSA ---
-        Row(modifier = Modifier.padding(8.dp)) {
-            Button(onClick = { navController.navigate("profile") }, modifier = Modifier.weight(1f).padding(4.dp)) {
+        Row(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+            Button(onClick = onNavigateToProfile, modifier = Modifier.weight(1f).padding(4.dp)) {
                 Text("Perfil", fontSize = 10.sp)
             }
             Button(onClick = { navController.navigate("favs") }, modifier = Modifier.weight(1f).padding(4.dp)) {
                 Text("Favs", fontSize = 10.sp)
             }
-            Button(onClick = { navController.navigate("detail") }, modifier = Modifier.weight(1f).padding(4.dp)) {
-                Text("Detalle", fontSize = 10.sp)
-            }
         }
 
-        Text("Catálogo de Productos", modifier = Modifier.padding(start = 16.dp))
-
-        // --- LISTA DE ROPA ---
-        LazyColumn(modifier = Modifier.weight(1f)) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(8.dp)
+        ) {
             items(viewModel.products) { product ->
-                Text(
-                    text = "${product.title} - ${product.price}€",
-                    modifier = Modifier.padding(16.dp)
-                )
+                Card(
+                    modifier = Modifier.padding(8.dp).clickable { onProductClick(product) },
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Column {
+                        AsyncImage(
+                            model = product.image,
+                            contentDescription = product.title,
+                            modifier = Modifier.fillMaxWidth().height(120.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                        Text(product.title, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(8.dp))
+                        Text("${product.price}€", color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
+                    }
+                }
             }
         }
     }

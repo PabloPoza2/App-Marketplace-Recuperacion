@@ -5,8 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,7 +17,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MarketPlaceTheme {
-                // Inicia la navegación principal de la app
                 AppNavigation()
             }
         }
@@ -28,22 +26,20 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-
-    // Implementación de Arquitectura MVVM: El ViewModel sobrevive a recomposiciones
     val viewModel = remember {
-        val apiService = RetrofitClient.instance
-        val repository = ProductRepository(apiService)
-        ProductViewModel(repository)
+        ProductViewModel(ProductRepository(RetrofitClient.instance))
     }
 
+
+    val favoriteProducts = remember { mutableStateListOf<Product>() }
+    var selectedProduct by remember { mutableStateOf<Product?>(null) }
+
     Scaffold { innerPadding ->
-        // Configuración de las 5 pantallas requeridas por la rúbrica
         NavHost(
             navController = navController,
-            startDestination = "login", // Punto de entrada: Login (Firebase Auth)
+            startDestination = "login",
             modifier = Modifier.padding(innerPadding)
         ) {
-            // 1. Pantalla de Login
             composable("login") {
                 LoginScreen(onNavigate = { navController.navigate("home") })
             }
@@ -51,24 +47,44 @@ fun AppNavigation() {
             composable("home") {
                 HomeScreen(
                     viewModel = viewModel,
+                    navController = navController,
                     onNavigateToProfile = { navController.navigate("profile") },
-                    navController = navController // Pásale el controller aquí
+                    onProductClick = { product ->
+                        selectedProduct = product
+                        navController.navigate("detail")
+                    }
                 )
             }
 
-            // 3. Pantalla de Detalle
             composable("detail") {
-                DetailScreen(onBack = { navController.popBackStack() })
+                selectedProduct?.let { item ->
+                    DetailScreen(
+                        product = item,
+                        onBack = { navController.popBackStack() },
+                        onAddToFavorites = {
+                            if (!favoriteProducts.contains(item)) {
+                                favoriteProducts.add(item)
+                            }
+                        }
+                    )
+                }
             }
 
-            // 4. Pantalla de Favoritos (Persistencia ROOM)
             composable("favs") {
-                FavoritesScreen()
+                FavoritesScreen(
+                    favorites = favoriteProducts,
+                    onBack = { navController.popBackStack() },
+                    onProductClick = { product ->
+                        selectedProduct = product
+                        navController.navigate("detail")
+                    }
+                )
             }
-
-            // 5. Pantalla de Perfil (Firebase Crashlytics)
             composable("profile") {
-                ProfileScreen()
+                ProfileScreen(
+                    onBack = { navController.popBackStack() },
+                    onNavigateToFavs = { navController.navigate("favs") }
+                )
             }
         }
     }

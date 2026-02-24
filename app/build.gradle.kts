@@ -60,9 +60,10 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
 dependencies {
-    // Retrofit para la API
+    implementation(libs.androidx.compose.foundation.layout)// Retrofit para la API
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     // Room para BD
     val room_version = "2.6.1"
